@@ -134,25 +134,25 @@ Una vez iniciado, el agente se mostrará en la lista de dispositivos activos den
 
 1. **Identificación del rango de red**
     Antes de asignar una IP fija, debemos conocer el gateway de la red para no generar conflictos: 
-        - En Windows: ejecutar ipconfig y localizar la dirección del gateway. 
-        - En Linux: ejecutar ifconfig (o ip a) para obtener la misma información. 
+    - En Windows: ejecutar ipconfig y localizar la dirección del gateway. 
+    - En Linux: ejecutar ifconfig (o ip a) para obtener la misma información. 
     Con el gateway identificado, se conoce el rango de direcciones disponible en la red local. 
 
 2. **Configuración de la interfaz de red en el servidor**
-    # 1. Dentro de la VM del servidor Wazuh, se identifica primero la interfaz de red activa:
+    ### 2.1. Dentro de la VM del servidor Wazuh, se identifica primero la interfaz de red activa:
     ```bash
     ip a 
     # Interfaz identificada en este caso: eth0 (puede variar: ens33, etc.)
     ``` 
-    # 2. Se verifica la configuración actual de la interfaz:
+    ### 2.2. Se verifica la configuración actual de la interfaz:
     ```bash
     cat /etc/sysconfig/network-scripts/ifcfg-eth0
     ```
-    # 3. Y se edita el archivo con privilegios de administrador:
+    ### 2.3. Y se edita el archivo con privilegios de administrador:
     ```bash
     sudo nano /etc/sysconfig/network-scripts/ifcfg-eth0
     ```
-    # 4. Con el siguiente contenido, ajustando IPADDR al valor deseado dentro del rango detectado: 
+    ### 2.4. Con el siguiente contenido, ajustando IPADDR al valor deseado dentro del rango detectado: 
     ```bash
     DEVICE=eth0 
     BOOTPROTO=none 
@@ -171,7 +171,7 @@ Una vez iniciado, el agente se mostrará en la lista de dispositivos activos den
     PERSISTENT_DHCLIENT=yes 
     RES_OPTIONS="timeout:2 attempts:5"
     ```
-    # 5. Finalmente, se reinicia el servicio de red para aplicar los cambios y se verifica el resultado:
+    ### 2.5. Finalmente, se reinicia el servicio de red para aplicar los cambios y se verifica el resultado:
     ```bash
     sudo systemctl restart network 
     ip a   # Verifica que la IP fija se haya aplicado correctamente
