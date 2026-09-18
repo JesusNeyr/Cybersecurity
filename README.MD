@@ -100,13 +100,13 @@ Implementación de un entorno Wazuh utilizando agentes y conectividad mediante T
 
 Laboratorio orientado a la construcción de un entorno SOC utilizando Wazuh, Suricata, Threat Intelligence y diferentes mecanismos de detección.
 
-[Ver laboratorio →](./cybersecurity/SOC/Labs/02-wazuh-soc-lab/)
+[Ver laboratorio →](./SOC/Labs/02-wazuh-suricata-yara/)
 
 ### Splunk
 
 Laboratorios orientados al análisis de logs, búsquedas, consultas SPL, detección e investigación.
 
-[Ver laboratorio →](./cybersecurity/SOC/Labs/03-splunk/)
+[Ver laboratorio →](./SOC/Labs/03-splunk/)
 
 ---
 
