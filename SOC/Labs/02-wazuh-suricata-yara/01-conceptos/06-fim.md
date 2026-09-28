@@ -1,8 +1,8 @@
 # :page_facing_up: File Integrity Monitoring (FIM)
 
-**FIM (File Integrity Monitoring)** es un mecanismo que detecta cambios en archivos y directorios monitoreados.
+**FIM (File Integrity Monitoring)** mecanismo que detecta cambios en archivos y directorios monitoreados.
 
-En nuestro laboratorio, FIM es implementado por **Wazuh mediante Syscheck** y se utiliza para detectar modificaciones dentro de la zona de evidencia del CyberRange.
+FIM es implementado por **Wazuh mediante Syscheck** y se utiliza para detectar modificaciones dentro de la zona de evidencia del CyberRange.
 
 ---
 

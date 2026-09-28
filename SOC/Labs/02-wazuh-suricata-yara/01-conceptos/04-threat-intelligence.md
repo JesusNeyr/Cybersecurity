@@ -8,11 +8,7 @@ En nuestro lab utilizamos una **CDB List de Wazuh** para clasificar una IP obser
 
 ## :dart: ¿Qué hacemos en nuestro lab?
 
-En la primera etapa, Suricata detecta tráfico proveniente de:
-
-```text 
-172.30.0.20
-```
+En la primera etapa, Suricata detecta tráfico proveniente de Attacker hacia DVWA.
 
 Wazuh recibe ese evento, pero inicialmente solamente conoce datos como:
 
@@ -39,7 +35,7 @@ CDB List
 IOC Match
 ```
 
-Objetivo transformar un evento de red genérico en una alerta que tenga **contexto adicional para su investigación**.
+Objetivo tomar un evento de red genérico y darle **contexto adicional para su investigación**.
 
 ---
 
@@ -53,11 +49,7 @@ En nuestro laboratorio la lista es:
 /var/ossec/etc/lists/threat-intel-ip
 ```
 
-Contiene pares:
-
-```text 
-IP:etiqueta
-```
+Contiene pares `key:valor`:
 
 Por ejemplo:
 
@@ -67,7 +59,7 @@ Por ejemplo:
 203.0.113.44:DemoPhishing-high
 ```
 
-La IP `172.30.0.20` corresponde al **Attacker de nuestro laboratorio**. Las demás son indicadores de ejemplo y no se utilizan para generar tráfico.
+La IP `172.30.0.20` corresponde al **Attacker de nuestro laboratorio**.
 
 ---
 

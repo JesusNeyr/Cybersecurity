@@ -4,13 +4,7 @@
 
 En esta etapa se realiza el **Threat Hunting** sobre las evidencias generadas durante el laboratorio.
 
-La hipótesis planteada es que el host que generó una alerta de **Threat Intelligence** puede contener artefactos relacionados con **PurpleWolf**.
-
-Para investigarlo se utilizan tres fuentes de evidencia:
-
-* **Threat Intelligence (TI):** identifica el indicador de compromiso relacionado con una IP.
-* **FIM:** registra cambios realizados sobre archivos del directorio de evidencias.
-* **YARA:** busca patrones asociados a los artefactos de PurpleWolf.
+Lo que se planteo es que el host que generó una alerta de **Threat Intelligence** puede contener artefactos relacionados con **PurpleWolf**.
 
 El objetivo no es generar una nueva detección, sino **comparar y relacionar las evidencias obtenidas** para determinar qué ocurrió sobre el host.
 
@@ -45,9 +39,6 @@ El análisis parte de una alerta de Threat Intelligence y continúa con la búsq
                         ▼
                  Evidencia final
 ```
-
-> **Importante:** FIM y YARA funcionan de manera independiente.
-> FIM no ejecuta YARA. El temporizador de `systemd` ejecuta las búsquedas YARA de forma independiente.
 
 ---
 
@@ -112,7 +103,7 @@ El objetivo es comprobar que **el archivo fue creado o modificado** y que ese ca
 
 A continuación se analizan los eventos producidos por la búsqueda YARA.
 
-La regla personalizada utilizada en el laboratorio es:
+La regla personalizada es:
 
 ```text
 rule.id:100600
@@ -150,7 +141,7 @@ corresponde a la detección generada por la integración de **YARA con Wazuh**.
 
 # :mag: 4. Comparar FIM y YARA sobre el mismo archivo
 
-Uno de los puntos importantes del Threat Hunting es comprobar si diferentes fuentes de evidencia apuntan al mismo artefacto.
+Comprobar si diferentes fuentes de evidencia apuntan al mismo artefacto.
 
 Para ello, se utiliza el archivo generado durante la prueba final:
 
@@ -207,9 +198,9 @@ Una misma evidencia puede producir ambos tipos de eventos.
 
 # :mag: 5. Comparar con Threat Intelligence
 
-El laboratorio también permite comparar las evidencias obtenidas con la alerta inicial de **Threat Intelligence**.
+El laboratorio nos permite comparar las evidencias obtenidas con la alerta inicial de **Threat Intelligence**.
 
-En Wazuh Dashboard se pueden utilizar las siguientes consultas.
+En Wazuh Dashboard hacer las siguientes consultas.
 
 ### Threat Intelligence
 
@@ -269,8 +260,6 @@ Host investigado
 
 # :warning: 7. No existe una correlación automática entre TI y YARA
 
-Un punto importante del laboratorio es que **Threat Intelligence y YARA son mecanismos independientes**.
-
 Que un host genere una alerta de TI no significa automáticamente que YARA se ejecute sobre ese host.
 
 Del mismo modo:
@@ -305,54 +294,7 @@ El analista compara las evidencias para determinar si existe una relación entre
 
 ---
 
-# :mag: 8. Visualización final en Wazuh
-
-Desde **Wazuh Dashboard** se pueden realizar las tres búsquedas:
-
-### YARA
-
-```text
-agent.name:"cyberrange-suricata" AND rule.id:100600
-```
-
-### FIM
-
-```text
-agent.name:"cyberrange-suricata" AND rule.groups:syscheck
-```
-
-### Threat Intelligence
-
-```text
-agent.name:"cyberrange-suricata" AND rule.id:100500
-```
-
-La comparación final debe centrarse en:
-
-```text
-┌───────────────────────────────┐
-│ Threat Intelligence           │
-│ rule.id: 100500               │
-└───────────────┬───────────────┘
-                │
-                │ host / timestamp
-                ▼
-┌───────────────────────────────┐
-│ FIM                           │
-│ rule.groups: syscheck         │
-└───────────────┬───────────────┘
-                │
-                │ archivo / timestamp
-                ▼
-┌───────────────────────────────┐
-│ YARA                          │
-│ rule.id: 100600               │
-└───────────────────────────────┘
-```
-
----
-
-# :clipboard: 9. Resultado del Threat Hunting
+# :clipboard: 8. Resultado del Threat Hunting
 
 Al finalizar el análisis se debe poder identificar:
 
@@ -365,23 +307,6 @@ Al finalizar el análisis se debe poder identificar:
 * qué relación temporal existe entre los eventos.
 
 El resultado es una **visión conjunta de la evidencia disponible en el host**, utilizando diferentes mecanismos de detección y monitoreo.
-
----
-
-# :white_check_mark: 10. Checklist final
-
-* [ ] Identificar el host asociado a la alerta de Threat Intelligence.
-* [ ] Consultar los eventos FIM del agente `cyberrange-suricata`.
-* [ ] Identificar los archivos modificados.
-* [ ] Consultar las alertas YARA `100600`.
-* [ ] Comparar las rutas de los archivos.
-* [ ] Comparar timestamps.
-* [ ] Comparar hashes cuando estén disponibles.
-* [ ] Revisar las evidencias desde Wazuh Dashboard.
-* [ ] Comparar TI, FIM y YARA.
-* [ ] Documentar las relaciones encontradas.
-
----
 
 # :dart: Resultado del laboratorio
 
@@ -410,7 +335,5 @@ Cambios       Patrones
            ▼
       Wazuh Dashboard
 ```
-
-El laboratorio demuestra cómo diferentes fuentes de telemetría pueden utilizarse durante una investigación para construir contexto sobre un mismo host y sus archivos.
 
 El Threat Hunting, en este escenario, consiste en **formular una hipótesis, buscar evidencias y contrastar los resultados de TI, FIM y YARA**.

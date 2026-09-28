@@ -55,19 +55,7 @@ La condición de la regla requiere que coincidan:
 
 ```text 
 3 de los 4 patrones
-```
-
-Por lo tanto:
-
-```text 
-Archivo
-   │
-   ▼
-YARA
-   │
-   ├── 3 o más patrones → Match
-   │
-   └── menos de 3        → Sin match
+Para que exista un match
 ```
 
 ---
@@ -77,22 +65,6 @@ YARA
 **YARA no se ejecuta cuando FIM detecta un cambio**.
 
 La ejecución se realiza periódicamente mediante un **timer de systemd**.
-
-```text
-systemd timer
-      │
-      ▼
-script YARA
-      │
-      ▼
-YARA
-      │
-      ▼
-analiza archivos
-      │
-      ▼
-YARA Match
-```
 
 El resultado se registra en:
 

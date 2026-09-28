@@ -42,36 +42,6 @@ En nuestro laboratorio:
 
 ---
 
-## :link: ¿Cómo se relacionan?
-
-No forman una cadena donde uno necesariamente active al siguiente.
-
-```text
-                    VM2
-                     │
-          ┌──────────┼──────────┐
-          │          │          │
-          ▼          ▼          ▼
-      Suricata      FIM        YARA
-          │          │          │
-          ▼          │          ▼
-    evento de red    │     YARA Match
-          │          │          │
-          ▼          ▼          │
-      Threat Intelligence       │
-          │                     │
-          └──────────┬──────────┘
-                     ▼
-                  Wazuh
-                     │
-                     ▼
-               Investigación
-```
-
-**FIM registra cambios. YARA se ejecuta de forma independiente mediante un timer de `systemd`. FIM no dispara YARA.**
-
----
-
 ## :file_folder: Evidencia 
 
 Los archivos utilizados para el hunting se encuentran en:
@@ -79,19 +49,6 @@ Los archivos utilizados para el hunting se encuentran en:
 ```text
 /opt/cybersoc-hunting/evidence
 ```
-
-El laboratorio utiliza archivos de prueba inofensivos que contienen indicadores simulados de **PurpleWolf**.
-
-La regla YARA busca, entre otros patrones:
-
-```text
-PurpleWolf
-172.30.0.20
-CYBERSOC-LAB
-PurpleWolf-C2
-```
-
-y requiere que coincidan **3 de ellos**.
 
 ---
 
@@ -139,17 +96,3 @@ Recordar:
 * **YARA** busca patrones dentro de archivos.
 * FIM y YARA funcionan **de forma independiente**.
 * El objetivo es **correlacionar evidencias**, no asumir automáticamente que una coincidencia equivale a un incidente.
-
-El concepto central es:
-
-```text
-Detección
-   ↓
-Contexto
-   ↓
-Búsqueda de evidencias
-   ↓
-Correlación
-   ↓
-Investigación
-```

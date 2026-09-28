@@ -1,8 +1,6 @@
 # :satellite: 03 — Suricata
 
-**Suricata** actuara como NIDS (Network Intrusion Detection System) dentro de VM2.
-
-Encargado de inspeccionar el tráfico generado dentro de la red Docker del laboratorio y generar eventos estructurados en formato **EVE JSON**.
+**Suricata** inspeciona el trafico y generar eventos en formato **EVE JSON**.
 
 Estos eventos serán posteriormente recogidos por el Wazuh Agent y enviados al Wazuh Manager.
 
@@ -10,33 +8,16 @@ Estos eventos serán posteriormente recogidos por el Wazuh Agent y enviados al W
 
 # :dart: Objetivo
 
-Al finalizar esta etapa tendremos funcionando el siguiente flujo:
+Funcionamiento de suricata en el lab:
 
 ![](../img/flujo_suricata_completo.png)
 
-Crearemos una regla en suricata para detectar solicitudes HTTP hacia:
-
-```text
-/login.php
-```
-
-La regla utilizará:
-
-```text
-SID: 1000001
-```
-
-y el mensaje:
-
-```text
-CYBERSOC - Acceso HTTP a DVWA
-```
+Crearemos una regla para solicitudes a `/login.php`, que SID y el mensaje que usara al detectarla en suricata:
+Creamos una regla en suricata para detectar solicitudes HTTP hacia:
 
 ---
 
 # :whale: 1. Preparar la red Docker del laboratorio
-
-Creamos la red de docker sobre la cual se observara el trafico.
 
 La red utilizada es:
 
@@ -54,31 +35,21 @@ Los dos contenedores principales serán:
 
 # :file_folder: 1.1 Crear el directorio del laboratorio
 
-En **VM2**, crear el directorio:
+En **VM2**, creamos el directorio e ingresamos a el:
 
 ```bash
 sudo mkdir -p /opt/cybersoc-lab
-```
 
-Entrar en él:
-
-```bash
 cd /opt/cybersoc-lab
-```
 
-Verificar:
-
-```bash
+# Verificamos
 pwd
-```
 
-Resultado esperado:
-
-```text
+#esperamos:
 /opt/cybersoc-lab
 ```
 
-Este será el directorio donde se almacenará la configuración Docker utilizada por DVWA y el atacante.
+Aca se almacenara la configuración Docker utilizada por DVWA y el atacante.
 
 ---
 
@@ -132,10 +103,10 @@ networks:
         - subnet: 172.30.0.0/24
 ```
 
-Esta configuración define:
+Esto nos define:
 
-* El contenedor `cybersoc-dvwa`.
-* El contenedor `cybersoc-attacker`.
+* El contenedor victima `cybersoc-dvwa`.
+* El contenedor atacante `cybersoc-attacker`.
 * La red `cybersoc_lab`.
 * El bridge `br-cybersoc`.
 * La subred `172.30.0.0/24`.
@@ -146,58 +117,39 @@ Esta configuración define:
 
 # :mag: 1.3 Validar el archivo Docker Compose
 
-Antes de iniciar los contenedores, validar el archivo:
-
 ```bash
 sudo docker compose config
 ```
 
 El comando debe finalizar sin errores de sintaxis.
 
-> :white_check_mark: Es recomendable validar primero el archivo y levantar los contenedores después. Así podemos distinguir un problema de configuración de Docker de un problema posterior de Suricata.
+> :white_check_mark: Necesitamos validar primero el file y luego levantar los contenedores, asi detectamos problemas de configuracion de Docker o de suricata.
 
 ---
 
 # :rocket: 1.4 Iniciar DVWA y Attacker
 
-Ejecutar:
 
 ```bash
+#Ejecutar
 sudo docker compose up -d
-```
-
-Verificar:
-
-```bash
+#verificamos
 sudo docker compose ps
+#salida esperada
+#cybersoc-dvwa
+#cybersoc-attacker
 ```
-
-Deben aparecer:
-
-```text
-cybersoc-dvwa
-cybersoc-attacker
-```
-
-como contenedores ejecutándose.
-
 ---
 
-# :link: 1.5 Verificar el bridge Docker
+# :link: 1.5 verificamos br-cybersoc
 
-El laboratorio utiliza específicamente:
-
-```text
-br-cybersoc
-```
-
-Comprobar que existe:
+Comprobamos que existe:
 
 ```bash
 ip link show br-cybersoc
 ```
 
-Debe aparecer la interfaz correspondiente al bridge.
+Debe aparecer la interfaz del bridge.
 
 También se puede consultar la red Docker:
 
@@ -205,17 +157,11 @@ También se puede consultar la red Docker:
 sudo docker network inspect cybersoc_lab
 ```
 
-Dentro de la información obtenida deben aparecer la red:
-
-```text
-172.30.0.0/24
-```
-
-y los contenedores con sus respectivas direcciones.
+nos muestra los contenedores con sus respectivas direcciones.
 
 ---
 
-# :mag: 1.6 Verificar las direcciones de los contenedores
+# :mag: 1.6 verificamos las direcciones de los contenedores
 
 Ejecutar:
 
@@ -243,9 +189,7 @@ Resultado esperado:
 
 ---
 
-# :globe_with_meridians: 3. Probar la comunicación con DVWA
-
-Antes de instalar y configurar Suricata debemos comprobar que el tráfico que posteriormente queremos detectar realmente existe.
+# :globe_with_meridians: 3. Vemos la comunicación con DVWA
 
 La prueba se realizará desde el contenedor atacante.
 
@@ -276,12 +220,7 @@ pueden comunicarse correctamente.
 
 # :satellite: 4. Instalar Suricata
 
-Suricata se instalará directamente en:
-
-```text
-VM2 — CyberRange
-```
-Esto es importante porque Suricata deberá inspeccionar directamente la interfaz Linux:
+Suricata se instalará directamente en `VM2 — CyberRange`
 
 ```text
 br-cybersoc
@@ -332,15 +271,15 @@ Ejecutar:
 ```bash
 suricata --build-info
 ```
-Debe mostrar info sobre la version y caracteristicas con las que se compilo Suricata.
+Nos muestra info de version y como se compilo surica.
 
 ---
 
 # :shield: 5. Actualizar las reglas de Suricata
 
-Suricata utiliza reglas para determinar qué patrones de tráfico debe detectar.
+Las reglas determinan qué patrones de tráfico debe detectar.
 
-Actualizar las reglas disponibles mediante:
+Actualizar las reglas o por defecto disponibles mediante:
 
 ```bash
 sudo suricata-update
@@ -364,7 +303,7 @@ Debe existir:
 
 # :wrench: 6. Configurar Suricata
 
-El archivo principal de configuración de Suricata es:
+El archivo principal de configuración:
 
 ```text
 /etc/suricata/suricata.yaml
@@ -401,46 +340,26 @@ EXTERNAL_NET: "any"
 
 # :satellite: 6.2 Configurar la interfaz de captura
 
-Suricata debe inspeccionar el tráfico que atraviesa la red Docker.
-
-La interfaz utilizada es:
+La interfaz utilizada para inspeccionar es:
 
 ```text
 br-cybersoc
 ```
 
-Dentro de `suricata.yaml`, localizar:
-
-```yaml
-af-packet:
-```
-
-Configurar el primer bloque para utilizar:
+Dentro de `suricata.yaml`, localizar `af-packer` y configurar el bloque de **interface:br-cybersoc** :
 
 ```yaml
 af-packet:
   - interface: br-cybersoc
 ```
 
-La interfaz es especialmente importante porque el tráfico entre:
-
-```text
-Attacker --> DVWA
-```
-
-atraviesa el bridge Docker:
-
-```text
-br-cybersoc
-```
+La interfaz es especialmente importante porque el tráfico de atacante a victima pasa por el bridge de Docker donde esta nuestro br-cybersoc.
 
 Por eso Suricata debe escuchar esa interfaz.
 
 ---
 
 # :page_facing_up: 6.3 Configurar EVE JSON
-
-Suricata puede generar diferentes tipos de logs.
 
 Utilizaremos **EVE JSON**, nos permite que Wazuh recopile eventos estructurados.
 
@@ -450,17 +369,10 @@ El archivo utilizado será:
 /var/log/suricata/eve.json
 ```
 
-Dentro de `suricata.yaml`, localizar la sección:
+Dentro de `suricata.yaml`, localizar la sección `outputs` y comprobar la config de `eve-log`.
 
 ```yaml
 outputs:
-```
-
-y comprobar la configuración existente de `eve-log`.
-
-Debe existir una configuración equivalente a:
-
-```yaml
 - eve-log:
     enabled: yes
     filetype: regular
@@ -473,7 +385,7 @@ Debe existir una configuración equivalente a:
 
 ---
 
-# :mag: 7. Crear la regla personalizada de Suricata
+# :mag: 7. Crear la regla de Suricata
 
 La regla detectará solicitudes HTTP cuyo URI contenga:
 
@@ -481,7 +393,7 @@ La regla detectará solicitudes HTTP cuyo URI contenga:
 /login.php
 ```
 
-El archivo utilizado será:
+El archivo con las reglas se encontrará en:
 
 ```text
 /etc/suricata/rules/local.rules
@@ -540,7 +452,7 @@ El identificador:
 
 pertenece a **Suricata**.
 
-No es una regla de Wazuh.
+No pertenece a una regla de Wazuh.
 
 existen otros identificadoes:
 
@@ -554,29 +466,15 @@ existen otros identificadoes:
 
 # :link: 8. Cargar la regla local
 
-Crear la regla no es suficiente.
+Avisamos a suricata que el archivo creado para reglas locales forma parte de su arsenal de reglas que debe cargar asi que.
 
-Suricata también debe saber que el archivo:
-
-```text
-/etc/suricata/rules/local.rules
-```
-
-forma parte de las reglas que debe cargar.
-
-Volver a abrir:
+Volvemos a abrir:
 
 ```bash
 sudo nano /etc/suricata/suricata.yaml
 ```
 
-Localizar:
-
-```yaml
-rule-files:
-```
-
-La configuración debe incluir:
+Localizar `rule-files` y modificamos agregando la ruta de reglas locales:
 
 ```yaml
 rule-files:
@@ -586,13 +484,11 @@ rule-files:
 
 `suricata-update` es el lugar donde encontramos las reglas predeterminadas.
 
-`/etc/suricata/rules/local.rules` incorpora nuestras reglas personalizadas.
-
 ---
 
-# :white_check_mark: 9. Validar la configuración de Suricata
+# :white_check_mark: 9. Validar la configuración
 
-Antes de iniciar o reiniciar el servicio debemos validar la configuración.
+Validamos antes de reiniciar la configuración.
 
 Ejecutar:
 
@@ -637,25 +533,19 @@ RUN=yes
 IFACE=br-cybersoc
 ```
 
-Esto indica que:
-
-```text
-Suricata ->br-cybersoc
-```
-
-será la interfaz utilizada para la captura.
+Esto indica que suricata usa la interfaz de br-cybersoc para la captura de trafico:
 
 ---
 
 # :rocket: 10.1 Iniciar Suricata
 
-Habilitar el servicio:
+Habilitamos el servicio:
 
 ```bash
 sudo systemctl enable --now suricata
 ```
 
-Reiniciar para aplicar la configuración:
+Reiniciamos para que se actualice la configuración:
 
 ```bash
 sudo systemctl restart suricata
@@ -669,38 +559,24 @@ Ejecutar:
 
 ```bash
 sudo systemctl status suricata --no-pager
+# se espera
+# Active: active (running)
 ```
 
-El estado esperado es:
-
-```text
-Active: active (running)
-```
-
-También revisar los últimos mensajes:
+vemos los ultimos logs:
 
 ```bash
 sudo tail -n 30 /var/log/suricata/suricata.log
 ```
 
-Si esta todo ok, podemos avanzar con las pruebas 
+si no existe errores continuamos
 ---
 
-# :test_tube: 11. Prueba local de Suricata
+# :test_tube: 11. Prueba de Suricata
 
-Ahora generaremos tráfico controlado desde el atacante hacia DVWA.
+Generamos tráfico desde atacante hacia DVWA.
 
-El objetivo es producir una solicitud:
-
-```text
-GET /login.php
-```
-
-que debería coincidir con la regla:
-
-```text
-SID 1000001
-```
+El objetivo es producir una solicitud **GET /login.php**, debe coincidir con la regla `SID 1000001`
 
 ---
 
@@ -719,17 +595,7 @@ sudo docker compose exec attacker \
   curl -s http://dvwa/login.php >/dev/null
 ```
 
-El comando genera una solicitud HTTP desde:
-
-```text
-172.30.0.20
-```
-
-hacia:
-
-```text
-172.30.0.10
-```
+El comando genera una solicitud HTTP desde Acttacker a DVWA:
 
 ---
 
@@ -751,9 +617,7 @@ sudo jq -c \
 
 ---
 
-# :white_check_mark: 11.3 Resultado esperado
-
-Debe aparecer un evento con información equivalente a:
+# :white_check_mark: 11.3 Debe aparecer un evento con info
 
 ```text
 src_ip:       172.30.0.20
@@ -767,9 +631,7 @@ El punto importante es comprobar que Suricata identificó:
 ```text
 Attacker : 172.30.0.20 -> HTTP /login.php -> DVWA : 172.30.0.10 -> Regla 1000001
 ```
-
-El laboratorio de referencia utiliza esta misma prueba para validar la detección local de Suricata.
-
+con esto validamos las pruebas locales.
 ---
 
 # :shield: 12. Integrar Suricata con Wazuh
@@ -777,43 +639,20 @@ El laboratorio de referencia utiliza esta misma prueba para validar la detecció
 Tenemos: 
 ![alt text](../img/suricat_sin_vm1.png)
  
-Wazuh aun no está leyendo ese archivo.
+Wazuh aun no está leyendo ese archivo `eve.json`.
 
-Ahora configuraremos el Wazuh Agent de VM2 para recopilar:
-
-```text
-/var/log/suricata/eve.json
-```
-
+Ahora configuraremos el Wazuh Agent en VM2 para recopilar info del archivo `eve.json`
 ---
 
-# :computer: 12.1 Configurar el Wazuh Agent
+# :computer: 12.1 Configurar el Wazuh Agent en VM2
 
-Este paso se realiza en:
-
-```text
-VM2 — CyberRange
-```
-
-El archivo de configuración del Agent es:
-
-```text
-/var/ossec/etc/ossec.conf
-```
-
-Abrir:
+Ubicamos el archivo de configuración del Agent y ejecutamos con nano:
 
 ```bash
 sudo nano /var/ossec/etc/ossec.conf
 ```
 
-Antes del último:
-
-```xml
-</ossec_config>
-```
-
-agregar:
+Antes del último `</ossec_config>` agregamos:
 
 ```xml
 <localfile>
@@ -834,17 +673,11 @@ Formato:
 
 ---
 
-# :mag: 12.2 Validar la configuración del Agent
-
-Antes de reiniciar el servicio, validamos la configuración del Agent:
+# :mag: 12.2 Validamos la configuración del Agent y el componente de recoleccion de log
 
 ```bash
 sudo /var/ossec/bin/wazuh-agentd -t
-```
 
-También validar el componente encargado de la recolección de logs:
-
-```bash
 sudo /var/ossec/bin/wazuh-logcollector -t
 ```
 
@@ -852,7 +685,7 @@ Ambos comandos deben finalizar sin errores de configuración.
 
 ---
 
-# :arrows_counterclockwise: 12.3 Reiniciar Wazuh Agent
+# :arrows_counterclockwise: 12.3 Reiniciamos Wazuh Agent
 
 Aplicar la nueva configuración:
 
@@ -864,25 +697,13 @@ Verificar:
 
 ```bash
 sudo systemctl status wazuh-agent --no-pager
-```
-
-El resultado esperado:
-
-```text
-Active: active (running)
+#se espera
+#Active: active (running)
 ```
 
 ---
 
-# :test_tube: 13. Prueba completa de Suricata + Wazuh
-
-Ahora comprobaremos el flujo completo.
-
-La prueba generará varios eventos HTTP.
-
----
-
-## :computer: 13.1 Generar cinco eventos
+# :test_tube: 13. Prueba  Suricata + Wazuh
 
 En VM2:
 
@@ -909,11 +730,7 @@ Esto genera cinco solicitudes diferentes:
 /login.php?prueba=5
 ```
 
-Todas contienen:
-
-```text
-/login.php
-```
+Todas contienen `/login.php`:
 
 por lo que deberían coincidir con la regla `1000001`.
 
@@ -953,7 +770,7 @@ sudo docker compose exec wazuh.manager sh -c \
   "grep 'CYBERSOC - Acceso HTTP a DVWA' /var/ossec/logs/alerts/alerts.json | tail"
 ```
 
-Si la integración funciona, deben aparecer las alertas correspondientes al mensaje:
+Si todo funciona, deben aparecer las alertas correspondientes al mensaje:
 
 ```text
 CYBERSOC - Acceso HTTP a DVWA
@@ -971,25 +788,20 @@ https://192.168.56.10
 
 Buscar los eventos relacionados con Suricata.
 
-En el Dashboard se pueden utilizar consultas como:
+consultamos por: 
 
 ```text
 rule.groups:suricata
-```
 
-y:
-
-```text
 data.alert.signature_id:1000001
 ```
-
-Estas consultas permiten localizar los eventos relacionados con la integración de Suricata.
+Nos permite la localizacion de eventos mas rapido.
 
 ---
 
-# :warning: 14. Identificadores importantes
+# :warning: 14. RECORDAR
 
-En esta etapa aparecen dos identificadores que no deben confundirse.
+Aparecen dos identificadores que no deben confundirse.
 
 ### Suricata
 
@@ -997,7 +809,7 @@ En esta etapa aparecen dos identificadores que no deben confundirse.
 SID: 1000001
 ```
 
-Regla:
+Pertenece a la regla:
 
 ```text
 CYBERSOC - Acceso HTTP a DVWA
@@ -1029,21 +841,5 @@ La siguiente etapa será:
 ➡️ [04-threat-intelligence.md](./04-threat-intelligence.md)
 
 Allí se utilizará la CDB List:
-
-```text
-/var/ossec/etc/lists/threat-intel-ip
-```
-
-para asociar una etiqueta de Threat Intelligence a la IP:
-
-```text
-172.30.0.20
-```
-
-y posteriormente procesarla mediante la regla personalizada de Wazuh:
-
-```text
-100500
-```
 
 El objetivo será pasar de una alerta de detección de Suricata a una alerta enriquecida con contexto de Threat Intellige

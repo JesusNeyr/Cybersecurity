@@ -1,22 +1,17 @@
 # :mag: 04 - Threat Intelligence
 
-## :dart: Objetivo
+## :dart: Intro
 
-Con **Suricata** se detecta una peticion HTTP hacia DVWA y genera un evento en `eve.json`.
+**Suricata**  detecta una peticion HTTP hacia DVWA y genera un evento en `eve.json`.
 
-Ahora con **Threat Intelligence (TI)** le daremos contexto  a ese evento.
+Con **Threat Intelligence (TI)** le daremos contexto  a ese evento.
 
-La idea es pasar de:
+La idea es pasar de una alerta  a :
 
-```text
-Suricata detectó actividad HTTP -->  Alerta Wazuh
-```
-
-a:
 ![](../img/suricata_wazuh_ti.png)
 
 
-La IP del atacante `172.30.0.20` será utilizada como un **IOC ficticio** dentro de una lista de Threat Intelligence.
+La IP del atacante `172.30.0.20` será utilizada como un **IOC ficticio**.
 
 ---
 
@@ -59,27 +54,21 @@ Threat Intelligence agrega otra pregunta:
 
 Utilizaremos una lista de IOC basada en direcciones IP.
 
-La lista tendrá el formato:
+La lista tendrá el formato `key: valor`:
 
 ```text
 IP:etiqueta
-```
-
-Por ejemplo:
-
-```text
 172.30.0.20:PurpleWolf-C2-high
 ```
 
-La IP es la **clave** que Wazuh buscará.
+Wazuh buscará la clave.
 
-La etiqueta es información asociada al indicador.
 
 ---
 
-# :dart: 2. PIR del laboratorio
+# :dart: 2. Configuramos PIR
 
-Configuramos un **Priority Intelligence Requirement (PIR)** para dar contexto.
+**Priority Intelligence Requirement** para dar contexto.
 
 ### PIR
 
@@ -92,8 +81,6 @@ El ciclo:
 
 # :test_tube: 3. Verificar que la detección base funciona
 
-Antes de implementar Threat Intelligence debemos comprobar que la etapa anterior continúa funcionando.
-
 ## 3.1 Verificar Suricata
 
 Ejecutar en **VM2**:
@@ -101,12 +88,7 @@ Ejecutar en **VM2**:
 ```bash
 sudo systemctl status suricata --no-pager
 ```
-
-Debe aparecer:
-
-```text
-active (running)
-```
+Debe aparecer active
 
 ---
 
@@ -116,16 +98,12 @@ En **VM2**:
 
 ```bash
 sudo systemctl status wazuh-agent --no-pager
-```
 
-Además, comprobar la comunicación:
+#Además, comprobar la comunicación:
 
-```bash
 sudo grep -Ei 'connected|unable|error' \
   /var/ossec/logs/ossec.log | tail -20
 ```
-
-Debe existir evidencia de conexión con el Manager.
 
 ---
 
@@ -138,15 +116,11 @@ cd /opt/wazuh-docker/single-node
 
 sudo docker compose exec -T wazuh.manager \
   /var/ossec/bin/agent_control -lc
+
+# cyberrange-suricata    Active
 ```
 
-El agente debe aparecer como:
-
-```text
-cyberrange-suricata    Active
-```
-
-> Que el servicio `wazuh-agent` aparezca como `active (running)` en VM2 no demuestra por sí solo que esté conectado al Manager. La comprobación importante es `agent_control`.
+>La comprobación importante es `agent_control`.
 
 ---
 
@@ -166,24 +140,13 @@ Resultado esperado:
 ```text
 HTTP/1.1 200 OK
 ```
-
-Esto confirma que el tráfico entre:
-
-```text
-172.30.0.20 → 172.30.0.10
-```
-
 está funcionando.
 
 ---
 
 # :page_facing_up: 5. Verificar la recolección de `eve.json`
 
-El Wazuh Agent debe estar configurado para leer:
-
-```text
-/var/log/suricata/eve.json
-```
+El Wazuh Agent debe estar configurado para leer `/var/log/suricata/eve.json`:
 
 Comprobarlo en VM2:
 
@@ -211,8 +174,6 @@ sudo /var/ossec/bin/wazuh-logcollector -t
 ---
 
 # :traffic_light: 6. Generar un evento de línea base
-
-Antes de agregar la inteligencia de amenazas, generaremos una petición que permita comprobar el pipeline.
 
 En **VM2**:
 
@@ -267,13 +228,6 @@ sudo docker compose exec -T wazuh.manager \
   /var/ossec/logs/alerts/alerts.json | tail -1"
 ```
 
-En una instalación inicial, este evento debería corresponder a la regla integrada:
-
-```text
-rule.id    = 86601
-rule.level = 3
-```
-
 La regla `86601` es la regla base de Wazuh que procesa la alerta de Suricata.
 
 Tenemos entonces:
@@ -304,8 +258,6 @@ La lista será:
 
 ```text
 172.30.0.20:PurpleWolf-C2-high
-198.51.100.25:DemoC2-high
-203.0.113.44:DemoPhishing-high
 ```
 
 ### ¿Qué significa cada parte?
@@ -321,9 +273,6 @@ La lista será:
 En nuestro contexto:
 
 * `172.30.0.20` es la IP del atacante del laboratorio.
-* Las otras IP son ejemplos de IOC.
-
-> La etiqueta `PurpleWolf-C2-high` no es la que hace saltar el nivel de alerta, el nivel `12` es definido por nuestra regla personalizada.
 
 ---
 
@@ -343,8 +292,6 @@ Crear la lista:
 sudo docker compose exec -T wazuh.manager \
   sh -c 'cat > /var/ossec/etc/lists/threat-intel-ip' <<'EOF'
 172.30.0.20:PurpleWolf-C2-high
-198.51.100.25:DemoC2-high
-203.0.113.44:DemoPhishing-high
 EOF
 ```
 
@@ -359,8 +306,6 @@ Debe mostrar:
 
 ```text
 172.30.0.20:PurpleWolf-C2-high
-198.51.100.25:DemoC2-high
-203.0.113.44:DemoPhishing-high
 ```
 
 ---
@@ -390,29 +335,9 @@ sudo docker compose exec -T wazuh.manager \
 sudo docker compose exec -T wazuh.manager \
   ls -l /var/ossec/etc/lists/threat-intel-ip
 ```
-
 ---
 
-# :white_check_mark: 12. Comprobar capacidad de escritura
-
-Como comprobación adicional:
-
-```bash
-sudo docker compose exec -u wazuh -T wazuh.manager sh -c \
-'touch /var/ossec/etc/lists/.write_test &&
-echo "WRITE OK" &&
-rm /var/ossec/etc/lists/.write_test'
-```
-
-Resultado esperado:
-
-```text
-WRITE OK
-```
-
----
-
-# :gear: 13. Registramos la CDB en Wazuh
+# :gear: 12. Registramos la CDB en Wazuh
 
 Creamos una copia de seguridad de la configuración:
 
@@ -453,16 +378,6 @@ Le decimos a Wazuh:
 > Esta lista debe formar parte de las listas que utiliza el motor de reglas.
 
 La lista por sí sola **no genera una alerta**.
-
-Primero debe estar:
-
-```text
-creada
-   ↓
-registrada
-   ↓
-consultada por una regla
-```
 
 ---
 
@@ -571,8 +486,6 @@ sudo docker compose exec -T wazuh.manager \
 ---
 
 # :arrows_counterclockwise: 19. Aplicar la nueva configuración
-
-Como modificamos la configuración utilizada por el Manager, recrearemos la pila.
 
 En VM1:
 
@@ -720,8 +633,6 @@ cyberrange-suricata    Active
 
 # :test_tube: 25. Generar tráfico específico para Threat Intelligence
 
-Ahora generaremos un evento nuevo que podamos identificar fácilmente.
-
 En VM2:
 
 ```bash
@@ -833,8 +744,6 @@ jq '{
 
 # :test_tube: 29. Probar la regla con `wazuh-logtest`
 
-Para comprobar específicamente la lógica del decodificador y las reglas podemos utilizar `wazuh-logtest` **dentro del contenedor del Manager**.
-
 En VM1:
 
 ```bash
@@ -857,9 +766,6 @@ sudo jq -c 'select(
 ```
 
 Copiar la línea JSON resultante y pegarla en `wazuh-logtest`.
-
->[!NOTE]
->En caso de no detectar los eventos mediante CLI, podemos ingresar al Dashboard y corroborar que el trafico lo haya detectado, y sea puntuado con nivel de alerta 12.
 
 ---
 
@@ -922,14 +828,6 @@ sudo jq -c \
   )' \
   /var/log/suricata/eve.json | tail -5
 ```
-
-Deben aparecer eventos de esta ejecución con:
-
-```text
-src_ip  = 172.30.0.20
-dest_ip = 172.30.0.10
-```
-
 ---
 
 # :satellite: 34. Verificar la llegada al Manager
@@ -1168,18 +1066,6 @@ Rule 100500
 ---
 
 # :warning: 40. Qué NO podemos concluir
-
-Aunque obtengamos:
-
-```text
-IOC Match
-      ↓
-Rule 100500
-      ↓
-Level 12
-```
-
-no  concluir automáticamente:
 
 ```text
 IOC Match ≠ Incidente confirmado

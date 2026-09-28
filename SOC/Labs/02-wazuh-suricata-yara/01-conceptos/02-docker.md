@@ -1,20 +1,16 @@
 # :whale: Docker
 Usaremos docker para desplegar y conectar los componentes del **CyberRange** dentro de un entorno controlado.
 
-Función principal en este proyecto es proporcionar **contenedores, servicios y conectividad de red** sobre estos se generan eventos que posteriormente seran analizados por las herramientas del SOC.
+Función principal de proporcionar **contenedores, servicios y conectividad de red**, sobre estos se generan eventos que posteriormente seran analizados.
 
 ---
 
-## :dart: ¿Por qué usamos Docker?
+## :dart: ¿Por qué Docker?
 
-En **VM2 — CyberRange**, se necesita un entorno sobre el cual se genera trafico y actividades controladas.
-
-Docker nos facilita ejecutar los componentes del laboratorio como containers sin tener que instalar cada servicio directamente sobre el sistema operativo de la VM.
+Nos facilita ejecutar los componentes del laboratorio sin tener que instalar cada servicio sobre el sistema operativo de la VM2.
 
 En nuestro caso:
 ![arquitectura_docker_cyberRange](../img/docker_cyberRange.png)
-
-Docker proporciona el entorno donde se ejecutan estos componentes.
 
 ---
 
@@ -36,16 +32,6 @@ Estos conceptos son suficientes para comprender la infraestructura utilizada.
 
 ---
 
-# :whale: Imagen y contenedor
-
-La diferencia fundamental es:
-
-![im_dock_app/service](../img/img_cont_app.png)
-
-Nuestro laboratorio, la imagen usada para crear contenedores que proporcionan servicios como **DVWA** o el entorno **Attacker**.
-
-Lo podemos ver como:
-
 > **Imagen = plantilla**
 > **Contenedor = instancia ejecutándose**
 
@@ -55,7 +41,7 @@ Lo podemos ver como:
 
 Los contenedores necesitan una red para comunicarse.
 
-Nuestro CyberRange utiliza:
+Nuestro CyberRange usa:
 
 ```text
 172.30.0.0/24
@@ -65,7 +51,7 @@ Dentro de esta red tenemos:
 
 ![red_docker](../img/net_docker.png)
 
-Esto permite que el atacante genere tráfico hacia DVWA.
+Permitiendo a nuestro atacante generar trafico sobre DVWA.
 
 ---
 
@@ -88,9 +74,7 @@ Podemos visualizarlo conceptualmente:
 
 # :satellite: Docker + Suricata
 
-Docker genera el entorno donde se produce el tráfico que circula por la infraestructura de red Docker asociada al laboratorio.
-
-Suricata inspecciona ese tráfico:
+Suricata inspecciona el trafico que circula por la red docker del lab:
 ![trafic_suricata_inspec](../img/trafic_suricata_inspec.png)
 
 Por lo tanto:
@@ -105,9 +89,7 @@ Wazuh     → procesa y analiza los eventos
 
 # :computer: VM y Docker
 
-Es importante distinguir las dos capas de virtualización utilizadas en el laboratorio.
-
-Tenemos entonces:
+Tenemos que diferenciar las dos redes que tenemos en VM2, nos queda:
 
 * `192.168.56.20` → dirección de **VM2**.
 * `172.30.0.10` → dirección del **contenedor DVWA**.
@@ -130,76 +112,48 @@ docker-compose.yml
         ├── Attacker
         └── Network
 ```
+Compose permite definir la infraestructura necesaria en un archivo de configuración, no se hace manualmente.
 
-En lugar de configurar cada componente manualmente, Compose permite definir la infraestructura necesaria en un archivo de configuración.
-
-comandos de docker del lab:
+comandos de docker que usaremos:
 
 ```bash
 docker compose up
-```
-
-para iniciar los servicios definidos.
-
-```bash
+# para iniciar los servicios definidos.
 docker compose ps
+#para comprobar el estado de los servicios.
 ```
-
-para comprobar el estado de los servicios.
-
 ---
 
-# :mag: Comandos mínimos que debemos reconocer
+# :mag: Comandos basicos que debemos reconocer
 
-### Ver contenedores
+### Para contenedores
 
 ```bash
 docker ps
-```
+#Muestra los contenedores que están ejecutándose.
 
-Muestra los contenedores que están ejecutándose.
-
-```bash
 docker ps -a
+#Muestra contenedores ejecutándose y detenidos.
 ```
 
-Muestra contenedores ejecutándose y detenidos.
 
-### Ver imágenes
+### Para imágenes
 
 ```bash
 docker images
+#Muestra las imágenes disponibles.
 ```
 
-Muestra las imágenes disponibles.
-
-### Ver redes
+### Para redes
 
 ```bash
 docker network ls
+#Muestra las redes Docker existentes.
 ```
-
-Muestra las redes Docker existentes.
-
-### Inspeccionar una red
-
-```bash
-docker network inspect <network>
-```
-
-Permite consultar información de una red, incluyendo los contenedores conectados y sus direcciones IP.
-
-### Inspeccionar un contenedor
-
-```bash
-docker inspect <container>
-```
-
-Permite consultar información detallada de un contenedor.
 
 ---
 
-# :link: Relación con nuestro laboratorio
+# :link: Docker en nuestro laboratorio
 
 docker en el proyecto: 
 ![docker_en_project](../img/docker_en_project.png)
@@ -207,12 +161,3 @@ docker en el proyecto:
 ---
 
 # :brain: Lo que debemos saber antes de continuar
-
-Para este laboratorio, debemos poder responder:
-
-* :globe_with_meridians: ¿Qué es una Docker Network?
-* :bridge_at_night: ¿Qué función cumple `br-cybersoc`?
-* :computer: ¿Por qué `192.168.56.20` y `172.30.0.10` pertenecen a redes diferentes?
-* :satellite: ¿Por qué el tráfico entre Attacker y DVWA es relevante para Suricata?
-* :arrows_counterclockwise: ¿Para qué utilizamos Docker Compose?
-* :mag: ¿Qué información podemos obtener con `docker ps` y `docker network inspect`?
